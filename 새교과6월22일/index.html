@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <link rel="stylesheet" href="style.css">
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+
+	
+</head>
+
+<body>
+
+<div class="left">
+    <p class="menu" onclick="showHome()">
+        Hello World!
+<br>디자이너 배서연의 스페이스</p>
+       <img class="frog" src="froggy2.gif">
+          <p class="menu" onclick="showRoutine()">
+        유일한 루틴
+    </p>
+        <p class="menu" onclick="showCollect()">
+        수집
+    </p>
+      <p class="menu" onclick="showWork()">
+        이런것들을 해요
+    </p>
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<a href="https://www.instagram.com/baeseoye0n" target="_blank">
+    instagram
+</a>
+<br><a href="mailto:8aeseo@gmail.com">
+    e-mail
+</a>
+
+
+
+
+</div>
+
+
+<div class="divider"></div>
+
+<div class="right">
+    <div class="intro-box">
+     <div id="content">
+        <br>content: "귀여움"; 과 logic: "탄탄함";을 mixin하여 세상을 더 흥미롭게 만드는 디자이너입니다.
+<br>디지털 화면 위에서도, 현실의 도화지 위에서도 손으로 무언가를 사부작사부작 만들어낼 때 가장 행복합니다.
+<br>서툴지만 귀엽고 마음이 몽글몽글해지는 디자인을 좋아하시나요?
+<br>제 작업실에서 편안한 시간 보내고 가세요!
+<br><br>현재 사이트는 열심히 빌드 중(Build)이니, 자주 놀러 와서 구경해 주세요!
+</div>
+<script>
+
+function showHome() {
+    document.getElementById("content").innerHTML = `
+        <br>content: "귀여움"; 과 logic: "탄탄함";을 mixin하여 세상을 더 흥미롭게 만드는 디자이너입니다.<br>
+        디지털 화면 위에서도, 현실의 도화지 위에서도 손으로 무언가를 사부작사부작 만들어낼 때 가장 행복합니다.<br>
+        서툴지만 귀엽고 마음이 몽글몽글해지는 디자인을 좋아하시나요?<br>
+        제 작업실에서 편안한 시간 보내고 가세요!<br><br>
+
+        현재 사이트는 열심히 빌드 중(Build)이니,
+        자주 놀러 와서 구경해 주세요!
+    `;
+}
+
+function showRoutine() {
+    document.getElementById("content").innerHTML = `
+        <br>제 유일한 루틴이라 함은 아이스 아메리카노뿐입니다.
+        <br>20살 때부터 매일 같이 마시다 보니 이제는 없으면 안 되는 존재가 되었어요.
+        <br>심지어 몇 모금 마시지도 못하는데,눈앞에 있는 것과 없는 것의 차이가 말로 설명할 수 없을 만큼 엄청납니다.
+        <br>저에게 아메리카노는 신(God)같은 존재 입니다.
+
+         <br><br><img src="커피군단.png" class="routine-img">
+        <br> 배서연이 약 21일간 마신 아메리카노 군단 (과장 좀 섞어서..)
+    `;
+}
+function showCollect() {
+    document.getElementById("content").innerHTML = `
+        <br><a href="dog.html" class="work-link">강아지 수집</a><br>
+        <br><a href="cute.html" class="work-link">귀여운거 수집</a><br>
+        <br><a href="Keyring.html" class="work-link">키링 수집</a><br>
+
+
+
+        <br><br><br>저는 무언가를 수집하는 걸 참 좋아합니다.
+        <br>사실 하드디스크 깊숙이 모아놓고 평소에는 자주 들여다보지도 않아요. (^^)
+        <br>하지만 어느 날 문득, 이렇게 모아둔 사진 폴더를 열어보는 순간!!!
+        <br>마치 타임워프를 한 것처럼 시간 가는 줄 모르고 빠져들게 된답니다 ..
+        <br><br>저의 소박한 아카이브를 함께 스크롤 해봐요
+    `;
+}
+
+function showWork() {
+    document.getElementById("content").innerHTML = `
+        <br><a href="graphic.html" class="work-link">graphic</a><br>
+        <br><a href="branding.html" class="work-link">branding</a><br>
+        <br><a href="editorial.html" class="work-link">editorial</a><br>
+        <br><a href="printing.html" class="work-link">printing</a><br>
+
+        <br><br>요즘은 좋아하는 걸 즐기면서 잘 하는 사람이 되고 싶다는 생각이 많이 듭니다.
+        <br>(꿈을 이루는 그날까지 … 계속 업데이트 예정)
+    `;
+}
+
+function checkHash() {
+    if (window.location.hash === "#work") {
+        showWork();
+    }
+
+    if (window.location.hash === "#collect") {
+        showCollect();
+    }
+}
+
+window.onload = checkHash;
+window.onhashchange = checkHash;
+</script>
+</body>
+
+
+
+</html>
