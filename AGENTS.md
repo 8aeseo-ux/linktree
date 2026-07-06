@@ -7,6 +7,8 @@ Linky is the agent workflow for this static linktree homepage.
 - Local folder: `/Users/baeseoyeon/Downloads/0706_link`
 - GitHub remote: `https://github.com/8aeseo-ux/linktree.git`
 - Branch: `main`
+- FTP host: `qotjdus1016.dothome.co.kr`
+- FTP remote directory: `/html`
 - Entry file: `index.html`
 - Main stylesheet: `style.css`
 
@@ -32,10 +34,8 @@ FTP upload should happen after GitHub push succeeds.
 
 Required details:
 
-- FTP host
 - FTP username
 - FTP password
-- Remote directory
 
 Use environment variables or an interactive prompt for secrets. Do not write the FTP password into repo files or documentation.
 
@@ -46,3 +46,5 @@ Default upload exclusions:
 - `AGENTS.md` unless the user wants this file public
 
 With macOS default tools, use `curl --ftp-create-dirs -T` for each file. If `lftp` is installed, `mirror -R` is acceptable.
+
+If Dothome reports `552` disk quota exceeded, compare local and remote file sizes first and skip identical files. Do not keep retrying a full overwrite; ask the user to free hosting storage, increase quota, or choose which large media files to remove.
