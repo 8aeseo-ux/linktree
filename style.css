@@ -4,6 +4,7 @@
 			--link: #2f6de0;
 			--paper: #fff;
 			--stroke: #191919;
+			--button-orange: #f97316;
 		}
 
 		* { box-sizing: border-box; }
@@ -74,9 +75,9 @@
 			justify-content: center;
 			min-height: 76px;
 			padding: 18px 22px;
-			border: 1px dotted var(--stroke);
+			border: 1px dotted var(--button-orange);
 			border-radius: 0;
-			color: var(--link);
+			color: var(--button-orange);
 			text-decoration: none;
 			text-align: center;
 		}
@@ -97,7 +98,7 @@
 			display: block;
 			min-width: 0;
 			width: 100%;
-			color: var(--link);
+			color: var(--button-orange);
 			text-align: center;
 		}
 
