@@ -137,11 +137,64 @@
 
 		.dotori-page {
 			background: var(--paper);
+			overflow-x: hidden;
 		}
 
 		.dotori-main {
+			position: relative;
+			z-index: 1;
 			width: min(100%, 920px);
 			padding: 54px 24px 72px;
+		}
+
+		.acorn-rain {
+			position: fixed;
+			inset: 0;
+			z-index: 0;
+			pointer-events: none;
+			overflow: hidden;
+		}
+
+		.acorn {
+			position: absolute;
+			top: -100px;
+			width: var(--size);
+			height: auto;
+			opacity: 0.72;
+			filter: saturate(0.95);
+			animation: acorn-fall var(--duration) linear infinite;
+			animation-delay: var(--delay);
+			transform: translate3d(0, -120px, 0) rotate(var(--rotate-start));
+			will-change: transform;
+		}
+
+		.acorn-left {
+			left: max(12px, calc(50vw - 570px + var(--offset)));
+		}
+
+		.acorn-right {
+			left: min(calc(100vw - 70px), calc(50vw + 490px + var(--offset)));
+		}
+
+		.acorn-1 { --offset: 0px; --size: 42px; --duration: 13s; --delay: -1s; --drift: 44px; --rotate-start: -12deg; --rotate-end: 230deg; }
+		.acorn-2 { --offset: 70px; --size: 34px; --duration: 16s; --delay: -8s; --drift: -26px; --rotate-start: 18deg; --rotate-end: -190deg; }
+		.acorn-3 { --offset: 128px; --size: 50px; --duration: 18s; --delay: -4s; --drift: 30px; --rotate-start: -28deg; --rotate-end: 250deg; }
+		.acorn-4 { --offset: 0px; --size: 38px; --duration: 14s; --delay: -10s; --drift: -36px; --rotate-start: 8deg; --rotate-end: -220deg; }
+		.acorn-5 { --offset: 80px; --size: 52px; --duration: 19s; --delay: -6s; --drift: 22px; --rotate-start: 24deg; --rotate-end: 300deg; }
+		.acorn-6 { --offset: 144px; --size: 36px; --duration: 15s; --delay: -13s; --drift: -48px; --rotate-start: -18deg; --rotate-end: 210deg; }
+		.acorn-7 { --offset: 34px; --size: 58px; --duration: 22s; --delay: -16s; --drift: 18px; --rotate-start: 32deg; --rotate-end: -260deg; }
+		.acorn-8 { --offset: 104px; --size: 30px; --duration: 12s; --delay: -3s; --drift: -32px; --rotate-start: -8deg; --rotate-end: 180deg; }
+		.acorn-9 { --offset: 48px; --size: 46px; --duration: 17s; --delay: -2s; --drift: 38px; --rotate-start: 14deg; --rotate-end: 240deg; }
+		.acorn-10 { --offset: 128px; --size: 28px; --duration: 11s; --delay: -7s; --drift: -20px; --rotate-start: -20deg; --rotate-end: -200deg; }
+
+		@keyframes acorn-fall {
+			0% {
+				transform: translate3d(0, -120px, 0) rotate(var(--rotate-start));
+			}
+
+			100% {
+				transform: translate3d(var(--drift), calc(100vh + 140px), 0) rotate(var(--rotate-end));
+			}
 		}
 
 		.back-link {
@@ -271,6 +324,25 @@
 
 			.dotori-core {
 				font-size: 22px;
+			}
+		}
+
+		@media (max-width: 980px) {
+			.acorn {
+				opacity: 0.42;
+			}
+
+			.acorn-3,
+			.acorn-5,
+			.acorn-7 {
+				display: none;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.acorn {
+				animation: none;
+				transform: translate3d(0, 16px, 0) rotate(var(--rotate-start));
 			}
 		}
 	
