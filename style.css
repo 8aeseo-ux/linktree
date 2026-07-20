@@ -9,6 +9,18 @@
 
 		* { box-sizing: border-box; }
 
+		.visually-hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
 		body {
 			margin: 0;
 			min-height: 100vh;
@@ -129,13 +141,16 @@
 
 		.dotori-main {
 			width: min(100%, 920px);
-			padding: 48px 24px 72px;
+			padding: 54px 24px 72px;
 		}
 
 		.back-link {
 			display: inline-flex;
-			margin-bottom: 46px;
+			margin-bottom: 24px;
 			color: var(--button-orange);
+			font-size: 16px;
+			font-weight: 700;
+			line-height: 30px;
 			text-decoration: none;
 		}
 
@@ -146,55 +161,61 @@
 			outline: none;
 		}
 
-		.dotori-hero,
 		.dotori-section,
 		.dotori-core {
-			border: 1px dotted var(--button-orange);
+			border: 2px dotted var(--button-orange);
 		}
 
 		.dotori-hero {
-			padding: 54px 34px;
-			margin-bottom: 22px;
-			text-align: center;
+			padding: 0 34px;
+			margin-bottom: 24px;
+			color: var(--button-orange);
+			text-align: left;
 		}
 
 		.dotori-kicker {
-			margin: 0 0 18px;
+			margin: 0 0 24px;
 			color: var(--button-orange);
-			font-size: 16px;
+			font-family: "Cormorant Garamond", "Monoplex KR", ui-monospace, monospace;
+			font-size: 18px;
+			font-weight: 500;
+			line-height: 24px;
 		}
 
 		.dotori-hero h1 {
 			margin: 0;
 			color: var(--button-orange);
+			font-family: "Melanie", "Monoplex KR", ui-monospace, monospace;
 			font-size: 54px;
-			font-weight: 700;
-			line-height: 1;
-		}
-
-		.dotori-subtitle {
-			margin: 26px 0 0;
-			color: var(--button-orange);
-			font-size: 20px;
-		}
-
-		.dotori-intro {
-			margin: 30px 0 0;
+			font-weight: 400;
+			line-height: 66px;
 		}
 
 		.dotori-section {
-			padding: 30px 34px;
-			margin-top: 22px;
+			padding: 34px;
+			margin-top: 24px;
 		}
 
 		.dotori-section h2 {
-			margin: 0 0 22px;
+			margin: 0 0 24px;
 			color: var(--button-orange);
-			font-size: 24px;
+			font-family: "Cormorant Garamond", "Monoplex KR", ui-monospace, monospace;
+			font-size: 18px;
+			font-weight: 500;
+			line-height: 24px;
 		}
 
 		.dotori-section p {
 			margin: 0;
+		}
+
+		.dotori-copy,
+		.dotori-list,
+		.dotori-flow {
+			font-family: "Cormorant Garamond", "Monoplex KR", ui-monospace, monospace;
+			font-size: 15px;
+			font-weight: 400;
+			line-height: 1.75;
 		}
 
 		.dotori-list,
@@ -205,7 +226,7 @@
 
 		.dotori-list li,
 		.dotori-flow li {
-			margin: 10px 0;
+			margin: 0;
 		}
 
 		.dotori-flow li::marker {
@@ -229,18 +250,23 @@
 				margin-bottom: 30px;
 			}
 
-			.dotori-hero,
 			.dotori-section,
 			.dotori-core {
 				padding: 24px 18px;
 			}
 
-			.dotori-hero h1 {
-				font-size: 40px;
+			.dotori-hero {
+				padding: 0 18px;
 			}
 
-			.dotori-subtitle {
-				font-size: 18px;
+			.dotori-hero h1 {
+				font-size: 40px;
+				line-height: 48px;
+			}
+
+			.dotori-kicker,
+			.dotori-section h2 {
+				font-size: 16px;
 			}
 
 			.dotori-core {
