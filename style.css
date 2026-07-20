@@ -390,4 +390,116 @@
 				transform: translate3d(0, 16px, 0) rotate(var(--rotate-start));
 			}
 		}
+
+		.gaussian-page {
+			background: var(--paper);
+		}
+
+		.gaussian-main {
+			width: min(100%, 1080px);
+		}
+
+		.gaussian-hero h1 {
+			font-size: clamp(36px, 7vw, 64px);
+			line-height: 1.05;
+		}
+
+		.gaussian-viewer-section {
+			padding: 24px;
+		}
+
+		.gaussian-viewer {
+			position: relative;
+			width: 100%;
+			aspect-ratio: 16 / 9;
+			min-height: 360px;
+			border: 1px dotted var(--button-orange);
+			background:
+				radial-gradient(circle at 50% 45%, rgba(249, 115, 22, 0.12), transparent 32%),
+				#fff;
+			overflow: hidden;
+			touch-action: none;
+		}
+
+		.gaussian-canvas {
+			display: block;
+			width: 100%;
+			height: 100%;
+			cursor: grab;
+		}
+
+		.gaussian-canvas:active {
+			cursor: grabbing;
+		}
+
+		.gaussian-loading {
+			position: absolute;
+			inset: 0;
+			display: grid;
+			place-items: center;
+			margin: 0;
+			color: var(--button-orange);
+			font-size: 15px;
+			pointer-events: none;
+		}
+
+		.gaussian-controls {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+			gap: 14px;
+			align-items: end;
+			margin-top: 18px;
+		}
+
+		.gaussian-controls label {
+			display: grid;
+			gap: 8px;
+			color: var(--button-orange);
+			font-family: "Cormorant Garamond", "Monoplex KR", ui-monospace, monospace;
+			font-size: 15px;
+		}
+
+		.gaussian-controls input {
+			accent-color: var(--button-orange);
+		}
+
+		.gaussian-button {
+			min-height: 38px;
+			padding: 8px 14px;
+			border: 1px dotted var(--button-orange);
+			background: #fff;
+			color: var(--button-orange);
+			font: inherit;
+			font-size: 15px;
+			cursor: pointer;
+		}
+
+		.gaussian-button:hover,
+		.gaussian-button:focus-visible {
+			border-style: solid;
+			outline: none;
+		}
+
+		.gaussian-guide {
+			margin: 18px 0 0;
+			color: var(--button-orange);
+			font-family: "Cormorant Garamond", "Monoplex KR", ui-monospace, monospace;
+			font-size: 15px;
+			text-align: center;
+		}
+
+		@media (max-width: 680px) {
+			.gaussian-viewer-section {
+				padding: 18px;
+			}
+
+			.gaussian-viewer {
+				aspect-ratio: 1 / 1;
+				min-height: 280px;
+			}
+
+			.gaussian-controls {
+				grid-template-columns: 1fr;
+			}
+		}
 	
