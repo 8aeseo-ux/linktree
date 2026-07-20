@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spark Splat Tunnel Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --panel: rgba(12, 12, 12, 0.78);
+      --line: rgba(255, 255, 255, 0.16);
+      --text: #f4f1ea;
+      --muted: #b8b0a5;
+      --accent: #ffcc66;
+      --danger: #ff7a66;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #050505;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      background: #050505;
+      overflow: hidden;
+    }
+
+    body.shorts-mode {
+      background: #000;
+    }
+
+    body.shorts-mode #app {
+      width: min(100vw, 56.25vh);
+      height: min(100vh, 177.7778vw);
+      margin: auto;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 0 0 999px #000;
+    }
+
+    body.clean-ui .panel,
+    body.clean-ui .hint {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      width: min(420px, calc(100vw - 32px));
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.32);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .badge {
+      color: var(--accent);
+      font-size: 11px;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input[type="url"],
+    input[type="file"] {
+      width: 100%;
+      min-width: 0;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 9px;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #15120b;
+      background: var(--accent);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .slider {
+      display: grid;
+      grid-template-columns: 82px 1fr 42px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .section-label {
+      margin-top: 2px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .value {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      font-size: 12px;
+    }
+
+    .status {
+      min-height: 18px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .hint {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 10px 12px;
+      color: var(--muted);
+      background: rgba(0, 0, 0, 0.52);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      backdrop-filter: blur(14px);
+    }
+
+    .aim-marker {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(255, 204, 102, 0.9);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 140ms ease;
+    }
+
+    .aim-marker::before,
+    .aim-marker::after {
+      content: "";
+      position: absolute;
+      background: rgba(255, 204, 102, 0.9);
+    }
+
+    .aim-marker::before {
+      left: 50%;
+      top: -8px;
+      bottom: -8px;
+      width: 1px;
+    }
+
+    .aim-marker::after {
+      left: -8px;
+      right: -8px;
+      top: 50%;
+      height: 1px;
+    }
+
+    body.is-aiming canvas {
+      cursor: crosshair;
+    }
+
+    body.is-aiming .aim-marker {
+      opacity: 1;
+    }
+
+    @media (max-width: 640px) {
+      .panel {
+        top: 10px;
+        left: 10px;
+        width: calc(100vw - 20px);
+        padding: 12px;
+      }
+
+      .hint {
+        right: 10px;
+        bottom: 10px;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+        "@sparkjsdev/spark": "https://sparkjs.dev/releases/spark/2.1.0/spark.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main id="app" aria-label="Spark Gaussian Splatting tunnel viewer"></main>
+
+  <section class="panel" aria-label="Viewer controls">
+    <div class="title-row">
+      <h1>Spark Splat Tunnel Viewer</h1>
+      <span class="badge">Web prototype</span>
+    </div>
+
+    <label for="splatUrl">Splat URL</label>
+    <div class="row">
+      <input id="splatUrl" type="url" spellcheck="false">
+      <button id="loadUrl" type="button">Load</button>
+    </div>
+
+    <div class="stack">
+      <label for="splatFile">Local splat file</label>
+      <input id="splatFile" type="file" accept=".ply,.spz,.splat,.ksplat,.sog">
+    </div>
+
+    <div class="button-row">
+      <button id="playTunnel" type="button">Cinematic Pull</button>
+      <button id="resetCamera" class="secondary" type="button">Sweet Spot</button>
+      <button id="aimPullCenter" class="secondary" type="button">Aim Pull Center</button>
+      <button id="useCurrentView" class="secondary" type="button">Use Current View</button>
+      <button id="shortsMode" class="secondary" type="button">Shorts Mode</button>
+      <button id="hideUi" class="secondary" type="button">Hide UI</button>
+      <button id="autoPull" type="button">Auto Pull</button>
+      <button id="saveRecording" type="button">Save Recording</button>
+    </div>
+
+    <div class="stack" aria-label="Tunnel controls">
+      <div class="slider">
+        <label for="tunnelSpeed">Speed</label>
+        <input id="tunnelSpeed" type="range" min="0.45" max="2.2" value="1" step="0.05">
+        <span id="tunnelSpeedValue" class="value">1.00</span>
+      </div>
+      <div class="slider">
+        <label for="tunnelWobble">Wobble</label>
+        <input id="tunnelWobble" type="range" min="0" max="1.2" value="0" step="0.02">
+        <span id="tunnelWobbleValue" class="value">0.00</span>
+      </div>
+      <div class="slider">
+        <label for="tunnelFov">FOV</label>
+        <input id="tunnelFov" type="range" min="58" max="102" value="86" step="1">
+        <span id="tunnelFovValue" class="value">86</span>
+      </div>
+    </div>
+
+    <div class="stack" aria-label="Camera path tuning">
+      <div class="section-label">Camera path</div>
+      <div class="slider">
+        <label for="cameraX">Cam X</label>
+        <input id="cameraX" type="range" min="-3" max="3" value="1.14" step="0.02">
+        <span id="cameraXValue" class="value">1.14</span>
+      </div>
+      <div class="slider">
+        <label for="cameraY">Cam Y</label>
+        <input id="cameraY" type="range" min="-2" max="2" value="0.12" step="0.02">
+        <span id="cameraYValue" class="value">0.12</span>
+      </div>
+      <div class="slider">
+        <label for="focusX">Focus X</label>
+        <input id="focusX" type="range" min="-3" max="3" value="0.52" step="0.02">
+        <span id="focusXValue" class="value">0.52</span>
+      </div>
+      <div class="slider">
+        <label for="focusY">Focus Y</label>
+        <input id="focusY" type="range" min="-2" max="2" value="-0.33" step="0.02">
+        <span id="focusYValue" class="value">-0.33</span>
+      </div>
+      <div class="slider">
+        <label for="pullDepth">Depth</label>
+        <input id="pullDepth" type="range" min="1" max="8" value="4.2" step="0.1">
+        <span id="pullDepthValue" class="value">4.2</span>
+      </div>
+      <div class="slider">
+        <label for="levelRoll">Level</label>
+        <input id="levelRoll" type="range" min="-35" max="35" value="-14" step="1">
+        <span id="levelRollValue" class="value">-14</span>
+      </div>
+    </div>
+
+    <div id="status" class="status" role="status">Initializing renderer...</div>
+  </section>
+
+  <aside class="hint">
+    Use Aim Pull Center, then click the point you want to fall into. Use Current View saves your current framing as the start.
+    Auto Pull hides the UI and plays a vertical recording pass. Press Esc to show controls again.
+  </aside>
+  <div class="aim-marker" aria-hidden="true"></div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
+
+    const DEFAULT_SPLAT_URL = "https://raw.githubusercontent.com/8aeseo-ux/linktree/main/assets/gaussian-splat.ply";
+    const params = new URLSearchParams(window.location.search);
+    const initialSplatUrl = params.get("splat") || DEFAULT_SPLAT_URL;
+    const SPLAT_FOCUS = new THREE.Vector3(0.52, -0.33, -3.17);
+    const CAMERA_ENTRY = new THREE.Vector3(1.14, 0.12, 4.35);
+    let pullDepth = 4.2;
+    let targetDepth = 4.8;
+    let aimingForFocus = false;
+    let cameraRollDeg = -14;
+
+    const elements = {
+      app: document.querySelector("#app"),
+      splatUrl: document.querySelector("#splatUrl"),
+      splatFile: document.querySelector("#splatFile"),
+      loadUrl: document.querySelector("#loadUrl"),
+      playTunnel: document.querySelector("#playTunnel"),
+      resetCamera: document.querySelector("#resetCamera"),
+      aimPullCenter: document.querySelector("#aimPullCenter"),
+      useCurrentView: document.querySelector("#useCurrentView"),
+      shortsMode: document.querySelector("#shortsMode"),
+      hideUi: document.querySelector("#hideUi"),
+      autoPull: document.querySelector("#autoPull"),
+      saveRecording: document.querySelector("#saveRecording"),
+      aimMarker: document.querySelector(".aim-marker"),
+      status: document.querySelector("#status"),
+      tunnelSpeed: document.querySelector("#tunnelSpeed"),
+      tunnelWobble: document.querySelector("#tunnelWobble"),
+      tunnelFov: document.querySelector("#tunnelFov"),
+      tunnelSpeedValue: document.querySelector("#tunnelSpeedValue"),
+      tunnelWobbleValue: document.querySelector("#tunnelWobbleValue"),
+      tunnelFovValue: document.querySelector("#tunnelFovValue"),
+      cameraX: document.querySelector("#cameraX"),
+      cameraY: document.querySelector("#cameraY"),
+      focusX: document.querySelector("#focusX"),
+      focusY: document.querySelector("#focusY"),
+      pullDepth: document.querySelector("#pullDepth"),
+      levelRoll: document.querySelector("#levelRoll"),
+      cameraXValue: document.querySelector("#cameraXValue"),
+      cameraYValue: document.querySelector("#cameraYValue"),
+      focusXValue: document.querySelector("#focusXValue"),
+      focusYValue: document.querySelector("#focusYValue"),
+      pullDepthValue: document.querySelector("#pullDepthValue"),
+      levelRollValue: document.querySelector("#levelRollValue"),
+    };
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
+
+    const camera = new THREE.PerspectiveCamera(
+      64,
+      window.innerWidth / window.innerHeight,
+      0.01,
+      1000,
+    );
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    elements.app.appendChild(renderer.domElement);
+    resize();
+
+    const spark = new SparkRenderer({ renderer });
+    scene.add(spark);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.target.copy(SPLAT_FOCUS);
+
+    const guideGroup = createTunnelGuides();
+    scene.add(guideGroup);
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const focusPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -SPLAT_FOCUS.z);
+    const focusHit = new THREE.Vector3();
+    const guideForward = new THREE.Vector3(0, 0, -1);
+
+    const clock = new THREE.Clock();
+    const tunnel = {
+      active: false,
+      startedAt: 0,
+      duration: 7.4,
+      baseFov: 58,
+      maxFov: Number(elements.tunnelFov.value),
+      speed: Number(elements.tunnelSpeed.value),
+      wobble: Number(elements.tunnelWobble.value),
+      startPosition: new THREE.Vector3(),
+      startTarget: new THREE.Vector3(),
+      endPosition: new THREE.Vector3(),
+      endTarget: new THREE.Vector3(),
+      direction: new THREE.Vector3(),
+    };
+
+    let currentSplat = null;
+    let activeObjectUrl = null;
+
+    elements.splatUrl.value = initialSplatUrl;
+    syncSliderLabels();
+    resetCameraView();
+    bindEvents();
+    loadSplatFromUrl(initialSplatUrl);
+    renderer.setAnimationLoop(render);
+
+    function bindEvents() {
+      elements.loadUrl.addEventListener("click", () => {
+        const url = elements.splatUrl.value.trim();
+        if (url) {
+          loadSplatFromUrl(url);
+        }
+      });
+
+      elements.splatUrl.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          elements.loadUrl.click();
+        }
+      });
+
+      elements.splatFile.addEventListener("change", () => {
+        const file = elements.splatFile.files?.[0];
+        if (!file) {
+          return;
+        }
+        if (activeObjectUrl) {
+          URL.revokeObjectURL(activeObjectUrl);
+        }
+        activeObjectUrl = URL.createObjectURL(file);
+        elements.splatUrl.value = file.name;
+        loadSplatFromUrl(activeObjectUrl, file.name);
+      });
+
+      elements.playTunnel.addEventListener("click", startTunnelPull);
+      elements.resetCamera.addEventListener("click", () => {
+        resetCameraView();
+        setStatus("Sweet spot camera set. Press Cinematic Pull when ready.");
+      });
+      elements.aimPullCenter.addEventListener("click", startAimPullCenter);
+      elements.useCurrentView.addEventListener("click", useCurrentViewAsEntry);
+      elements.shortsMode.addEventListener("click", toggleShortsMode);
+      elements.hideUi.addEventListener("click", toggleCleanUi);
+      elements.autoPull.addEventListener("click", startAutoPull);
+      elements.saveRecording.addEventListener("click", saveRecordingPass);
+      renderer.domElement.addEventListener("pointerdown", handleCanvasPointerDown);
+      renderer.domElement.addEventListener("pointermove", moveAimMarker);
+
+      for (const input of [elements.tunnelSpeed, elements.tunnelWobble, elements.tunnelFov]) {
+        input.addEventListener("input", syncSliderLabels);
+      }
+
+      for (const input of [
+        elements.cameraX,
+        elements.cameraY,
+        elements.focusX,
+        elements.focusY,
+        elements.pullDepth,
+        elements.levelRoll,
+      ]) {
+        input.addEventListener("input", () => {
+          updateCameraPathFromControls();
+          syncSliderLabels();
+          if (!tunnel.active) {
+            resetCameraView();
+            setStatus("Camera path updated. Press Cinematic Pull to test it.");
+          }
+        });
+      }
+
+      window.addEventListener("resize", resize);
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          document.body.classList.remove("clean-ui");
+          elements.hideUi.textContent = "Hide UI";
+          setStatus("Controls shown.");
+        }
+      });
+    }
+
+    async function loadSplatFromUrl(url, label = url) {
+      setBusy(true);
+      setStatus(`Loading ${label}...`);
+
+      try {
+        const nextSplat = new SplatMesh({ url });
+        nextSplat.position.set(0, 0, -3);
+        nextSplat.quaternion.set(1, 0, 0, 0);
+        nextSplat.scale.setScalar(1);
+
+        if (currentSplat) {
+          scene.remove(currentSplat);
+        }
+
+        currentSplat = nextSplat;
+        scene.add(currentSplat);
+        resetCameraView();
+        setStatus(`Loaded ${label}`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not load splat: ${error.message || error}`, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function startTunnelPull() {
+      resetCameraView();
+      tunnel.active = true;
+      tunnel.startedAt = clock.getElapsedTime();
+      tunnel.duration = 7.4 / Number(elements.tunnelSpeed.value);
+      tunnel.maxFov = Number(elements.tunnelFov.value);
+      tunnel.wobble = Number(elements.tunnelWobble.value);
+      tunnel.startPosition.copy(camera.position);
+      tunnel.startTarget.copy(controls.target);
+      tunnel.direction.subVectors(tunnel.startTarget, tunnel.startPosition);
+      if (tunnel.direction.lengthSq() < 0.0001) {
+        tunnel.direction.set(0, 0, -1);
+      }
+      tunnel.direction.normalize();
+      tunnel.endPosition.copy(tunnel.startTarget).addScaledVector(tunnel.direction, pullDepth);
+      tunnel.endTarget.copy(tunnel.startTarget).addScaledVector(tunnel.direction, targetDepth);
+      alignTunnelGuides();
+      controls.enabled = false;
+      setStatus("Straight Cinematic Pull running...");
+    }
+
+    function toggleShortsMode() {
+      document.body.classList.toggle("shorts-mode");
+      elements.shortsMode.textContent = document.body.classList.contains("shorts-mode")
+        ? "Wide Mode"
+        : "Shorts Mode";
+      resize();
+      resetCameraView();
+      setStatus(document.body.classList.contains("shorts-mode")
+        ? "Shorts Mode is on. Use Auto Pull for a clean vertical pass."
+        : "Shorts Mode is off.");
+    }
+
+    function toggleCleanUi() {
+      document.body.classList.toggle("clean-ui");
+      elements.hideUi.textContent = document.body.classList.contains("clean-ui")
+        ? "Show UI"
+        : "Hide UI";
+      setStatus("Press Esc to show controls again.");
+    }
+
+    function startAutoPull() {
+      CAMERA_ENTRY.copy(camera.position);
+      SPLAT_FOCUS.x = controls.target.x;
+      SPLAT_FOCUS.y = controls.target.y;
+      syncControlsFromCameraPath();
+      document.body.classList.add("shorts-mode", "clean-ui");
+      elements.shortsMode.textContent = "Wide Mode";
+      elements.hideUi.textContent = "Show UI";
+      resize();
+      resetCameraView();
+      setStatus("Auto Pull starts now. Press Esc to show controls again.");
+      window.setTimeout(startTunnelPull, 300);
+    }
+
+    function saveRecordingPass() {
+      if (!renderer.domElement.captureStream || typeof MediaRecorder === "undefined") {
+        setStatus("This browser cannot record the canvas directly.", true);
+        return;
+      }
+
+      CAMERA_ENTRY.copy(camera.position);
+      SPLAT_FOCUS.x = controls.target.x;
+      SPLAT_FOCUS.y = controls.target.y;
+      syncControlsFromCameraPath();
+      document.body.classList.add("shorts-mode", "clean-ui");
+      elements.shortsMode.textContent = "Wide Mode";
+      elements.hideUi.textContent = "Show UI";
+      resize();
+      resetCameraView();
+
+      const mimeType = getRecordingMimeType();
+      const stream = renderer.domElement.captureStream(30);
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const chunks = [];
+      const durationMs = (7.4 / Number(elements.tunnelSpeed.value)) * 1000 + 1400;
+
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      });
+
+      recorder.addEventListener("stop", () => {
+        for (const track of stream.getTracks()) {
+          track.stop();
+        }
+
+        const blob = new Blob(chunks, { type: mimeType || "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `img_0549_spark_pull_${formatTimestamp()}.webm`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        document.body.classList.remove("clean-ui");
+        elements.hideUi.textContent = "Hide UI";
+        setStatus("Recording saved as a WebM download.");
+      });
+
+      setStatus("Recording current pass...");
+      recorder.start();
+      window.setTimeout(startTunnelPull, 250);
+      window.setTimeout(() => {
+        if (recorder.state !== "inactive") {
+          recorder.stop();
+        }
+      }, durationMs);
+    }
+
+    function startAimPullCenter() {
+      aimingForFocus = true;
+      tunnel.active = false;
+      controls.enabled = false;
+      document.body.classList.add("is-aiming");
+      setStatus("Click the exact point in the image you want the camera to fall into.");
+    }
+
+    function stopAimPullCenter() {
+      aimingForFocus = false;
+      controls.enabled = true;
+      document.body.classList.remove("is-aiming");
+    }
+
+    function handleCanvasPointerDown(event) {
+      if (!aimingForFocus) {
+        return;
+      }
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+      raycaster.setFromCamera(pointer, camera);
+
+      focusPlane.constant = -SPLAT_FOCUS.z;
+      if (!raycaster.ray.intersectPlane(focusPlane, focusHit)) {
+        stopAimPullCenter();
+        setStatus("Could not place the pull center. Try another point.", true);
+        return;
+      }
+
+      setPullFocus(focusHit.x, focusHit.y);
+      stopAimPullCenter();
+      camera.lookAt(SPLAT_FOCUS);
+      applyCameraRoll();
+      controls.target.copy(SPLAT_FOCUS);
+      controls.update();
+      setStatus("Pull center set. Press Cinematic Pull to test the inward move.");
+    }
+
+    function moveAimMarker(event) {
+      if (!aimingForFocus) {
+        return;
+      }
+
+      elements.aimMarker.style.left = `${event.clientX}px`;
+      elements.aimMarker.style.top = `${event.clientY}px`;
+    }
+
+    function useCurrentViewAsEntry() {
+      tunnel.active = false;
+      CAMERA_ENTRY.copy(camera.position);
+      SPLAT_FOCUS.x = controls.target.x;
+      SPLAT_FOCUS.y = controls.target.y;
+      syncControlsFromCameraPath();
+      alignTunnelGuides();
+      setStatus("Current view saved as the start. Press Cinematic Pull to test it.");
+    }
+
+    function updateTunnelPull(now) {
+      if (!tunnel.active) {
+        return;
+      }
+
+      const elapsed = now - tunnel.startedAt;
+      const rawProgress = Math.min(elapsed / tunnel.duration, 1);
+      const eased = easeInOutCubic(rawProgress);
+      const fovEase = easeOutExpo(rawProgress);
+      const targetProgress = easeInOutCubic(Math.min(rawProgress * 1.08, 1));
+
+      camera.position.copy(tunnel.startPosition).lerp(tunnel.endPosition, eased);
+      controls.target.copy(tunnel.startTarget).lerp(tunnel.endTarget, targetProgress);
+
+      camera.fov = THREE.MathUtils.lerp(tunnel.baseFov, tunnel.maxFov, fovEase);
+      camera.rotation.z = 0;
+      camera.updateProjectionMatrix();
+      camera.lookAt(controls.target);
+      applyCameraRoll();
+
+      if (rawProgress >= 1) {
+        tunnel.active = false;
+        controls.enabled = true;
+        camera.rotation.z = 0;
+        setStatus("Cinematic Pull finished. Press Sweet Spot to replay from the tuned view.");
+      }
+    }
+
+    function resetCameraView() {
+      tunnel.active = false;
+      controls.enabled = true;
+      camera.fov = tunnel.baseFov;
+      camera.position.copy(CAMERA_ENTRY);
+      camera.rotation.set(0, 0, 0);
+      controls.target.copy(SPLAT_FOCUS);
+      camera.lookAt(controls.target);
+      applyCameraRoll();
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    function createTunnelGuides() {
+      const group = new THREE.Group();
+      const material = new THREE.LineBasicMaterial({
+        color: 0xffcc66,
+        transparent: true,
+        opacity: 0.08,
+        depthWrite: false,
+      });
+
+      for (let i = 0; i < 24; i += 1) {
+        const radius = 0.55 + i * 0.065;
+        const geometry = new THREE.BufferGeometry();
+        const points = [];
+        const segments = 64;
+        for (let j = 0; j <= segments; j += 1) {
+          const angle = (j / segments) * Math.PI * 2;
+          points.push(
+            new THREE.Vector3(
+              Math.cos(angle) * radius,
+              Math.sin(angle) * radius,
+              0.75 - i * 0.52,
+            ),
+          );
+        }
+        geometry.setFromPoints(points);
+        group.add(new THREE.Line(geometry, material));
+      }
+
+      group.position.copy(SPLAT_FOCUS);
+      group.visible = true;
+      return group;
+    }
+
+    function render() {
+      const now = clock.getElapsedTime();
+      updateTunnelPull(now);
+      controls.update();
+      camera.lookAt(controls.target);
+      applyCameraRoll();
+      renderer.render(scene, camera);
+    }
+
+    function resize() {
+      const { width, height } = getViewportSize();
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+
+    function getViewportSize() {
+      const rect = elements.app.getBoundingClientRect();
+      return {
+        width: Math.max(1, Math.round(rect.width || window.innerWidth)),
+        height: Math.max(1, Math.round(rect.height || window.innerHeight)),
+      };
+    }
+
+    function syncSliderLabels() {
+      elements.tunnelSpeedValue.textContent = Number(elements.tunnelSpeed.value).toFixed(2);
+      elements.tunnelWobbleValue.textContent = Number(elements.tunnelWobble.value).toFixed(2);
+      elements.tunnelFovValue.textContent = elements.tunnelFov.value;
+      elements.cameraXValue.textContent = Number(elements.cameraX.value).toFixed(2);
+      elements.cameraYValue.textContent = Number(elements.cameraY.value).toFixed(2);
+      elements.focusXValue.textContent = Number(elements.focusX.value).toFixed(2);
+      elements.focusYValue.textContent = Number(elements.focusY.value).toFixed(2);
+      elements.pullDepthValue.textContent = Number(elements.pullDepth.value).toFixed(1);
+      elements.levelRollValue.textContent = elements.levelRoll.value;
+    }
+
+    function updateCameraPathFromControls() {
+      CAMERA_ENTRY.x = Number(elements.cameraX.value);
+      CAMERA_ENTRY.y = Number(elements.cameraY.value);
+      SPLAT_FOCUS.x = Number(elements.focusX.value);
+      SPLAT_FOCUS.y = Number(elements.focusY.value);
+      pullDepth = Number(elements.pullDepth.value);
+      targetDepth = pullDepth + 0.6;
+      cameraRollDeg = Number(elements.levelRoll.value);
+      alignTunnelGuides();
+    }
+
+    function setPullFocus(x, y) {
+      SPLAT_FOCUS.x = x;
+      SPLAT_FOCUS.y = y;
+      syncControlsFromCameraPath();
+      alignTunnelGuides();
+    }
+
+    function syncControlsFromCameraPath() {
+      elements.cameraX.value = clampToInput(elements.cameraX, CAMERA_ENTRY.x);
+      elements.cameraY.value = clampToInput(elements.cameraY, CAMERA_ENTRY.y);
+      elements.focusX.value = clampToInput(elements.focusX, SPLAT_FOCUS.x);
+      elements.focusY.value = clampToInput(elements.focusY, SPLAT_FOCUS.y);
+      elements.pullDepth.value = clampToInput(elements.pullDepth, pullDepth);
+      elements.levelRoll.value = clampToInput(elements.levelRoll, cameraRollDeg);
+      syncSliderLabels();
+    }
+
+    function applyCameraRoll() {
+      camera.rotateZ(THREE.MathUtils.degToRad(cameraRollDeg));
+    }
+
+    function alignTunnelGuides() {
+      const guideDirection = tunnel.direction.lengthSq() > 0.0001
+        ? tunnel.direction
+        : new THREE.Vector3().subVectors(SPLAT_FOCUS, CAMERA_ENTRY).normalize();
+      guideGroup.position.copy(SPLAT_FOCUS);
+      guideGroup.quaternion.setFromUnitVectors(guideForward, guideDirection);
+    }
+
+    function clampToInput(input, value) {
+      const min = Number(input.min);
+      const max = Number(input.max);
+      const step = Number(input.step) || 0.01;
+      const clamped = THREE.MathUtils.clamp(value, min, max);
+      return (Math.round(clamped / step) * step).toFixed(step < 0.1 ? 2 : 1);
+    }
+
+    function setBusy(isBusy) {
+      elements.loadUrl.disabled = isBusy;
+      elements.playTunnel.disabled = isBusy;
+      elements.autoPull.disabled = isBusy;
+      elements.saveRecording.disabled = isBusy;
+    }
+
+    function setStatus(message, isError = false) {
+      elements.status.textContent = message;
+      elements.status.classList.toggle("error", isError);
+    }
+
+    function getRecordingMimeType() {
+      const types = [
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm",
+      ];
+      return types.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+    }
+
+    function formatTimestamp() {
+      const date = new Date();
+      const pad = (value) => String(value).padStart(2, "0");
+      return [
+        date.getFullYear(),
+        pad(date.getMonth() + 1),
+        pad(date.getDate()),
+        "-",
+        pad(date.getHours()),
+        pad(date.getMinutes()),
+        pad(date.getSeconds()),
+      ].join("");
+    }
+
+    function easeInCubic(value) {
+      return value * value * value;
+    }
+
+    function easeInOutCubic(value) {
+      return value < 0.5
+        ? 4 * value * value * value
+        : 1 - Math.pow(-2 * value + 2, 3) / 2;
+    }
+
+    function easeOutExpo(value) {
+      return value === 1 ? 1 : 1 - Math.pow(2, -10 * value);
+    }
+  </script>
+</body>
+</html>
