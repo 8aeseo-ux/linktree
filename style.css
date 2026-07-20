@@ -502,6 +502,21 @@
 			text-align: center;
 		}
 
+		.instagram-section {
+			padding: 24px;
+		}
+
+		.instagram-embed-wrap {
+			display: flex;
+			justify-content: center;
+			width: 100%;
+			overflow-x: auto;
+		}
+
+		.instagram-media {
+			flex: 0 1 540px;
+		}
+
 		.gaussian-video-grid {
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -533,6 +548,10 @@
 
 		@media (max-width: 680px) {
 			.gaussian-viewer-section {
+				padding: 18px;
+			}
+
+			.instagram-section {
 				padding: 18px;
 			}
 
