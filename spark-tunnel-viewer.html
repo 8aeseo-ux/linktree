@@ -380,6 +380,9 @@
     const DEFAULT_SPLAT_URL = "https://raw.githubusercontent.com/8aeseo-ux/linktree/main/assets/gaussian-splat.ply";
     const params = new URLSearchParams(window.location.search);
     const initialSplatUrl = params.get("splat") || DEFAULT_SPLAT_URL;
+    if (params.get("clean") === "1") {
+      document.body.classList.add("clean-ui");
+    }
     const SPLAT_FOCUS = new THREE.Vector3(0.52, -0.33, -3.17);
     const CAMERA_ENTRY = new THREE.Vector3(1.14, 0.12, 4.35);
     let pullDepth = 4.2;
